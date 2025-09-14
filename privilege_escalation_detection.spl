@@ -1,0 +1,21 @@
+/* Privilege escalation via local admin or token abuse indicators
+   MITRE ATT&CK: T1068 / T1134
+   Logic: Detect new local admin group membership or suspicious parent-child process with elevation
+*/
+index=* sourcetype IN ("WinEventLog:Security","XmlWinEventLog:Security","Sysmon")
+| eval evtid=coalesce(EventCode,EventID,event_id)
+| eval user=coalesce(MemberName,SubjectUserName,TargetUserName,user)
+| eval group=coalesce(TargetSid,GroupName,Group)
+| where evtid IN (4728,4732,4735,4737,4756,4672) OR (evtid=1 AND like(lower(Image),"\\cmd.exe") AND like(lower(ParentImage),"\\lsass.exe"))
+| eval action=case(
+    evtid IN (4728,4732,4756),"Added to Privileged Group",
+    evtid=4672,"Special Privileges Assigned",
+    evtid=4735,"Group Changed",
+    evtid=4737,"Group Member Changed",
+    evtid=1,"Elevated Suspicious Process",
+    true(),"Other")
+| stats latest(_time) as last_time, values(host) as hosts, values(group) as groups by user, action
+| where action!="Other"
+| eval tactic="Privilege Escalation", technique="Various (T1068/T1134)"
+| convert ctime(last_time)
+| table last_time user action groups hosts tactic technique

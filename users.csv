@@ -1,0 +1,4 @@
+DisplayName,GivenName,Surname,sAMAccountName,Email,domain,Office,Department,Title,Groups,Roles
+Jane Doe,Jane,Doe,jdoe,jane.doe@example.corp,example.corp,HQ,Engineering,DevOps,"VPN Users;Domain Users","Engineer"
+Mike Williams,Mike,Williams,mwilliams,mike.williams@example.corp,example.corp,HQ,Security,SOC Analyst,"Domain Users","Analyst"
+Sara Smith,Sara,Smith,ssmith,sara.smith@example.corp,example.corp,Remote,IT,Contractor,"VPN Users","Contractor"

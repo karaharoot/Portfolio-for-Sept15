@@ -1,0 +1,15 @@
+/* Lateral movement via PowerShell Remoting / WinRM
+   MITRE ATT&CK: T1021.006
+   Logic: Network connections by powershell.exe to port 5985/5986 or WinRM service events
+*/
+index=* sourcetype IN ("Sysmon","WinEventLog:Microsoft-Windows-PowerShell/Operational")
+| eval dest_port=coalesce(DestinationPort,dest_port,dest_port_number)
+| eval process=coalesce(Image,process,ProcessName,process_name)
+| eval cmd=coalesce(CommandLine,cmdline,ProcessCommandLine)
+| where (like(lower(process),"%\\powershell.exe") OR like(lower(process),"%\\pwsh.exe"))
+      AND (dest_port IN (5985,5986) OR like(lower(cmd),"%new-pssession%") OR like(lower(cmd),"%enter-pssession%"))
+| stats count as hits, values(DestinationIp) as dests, values(host) as src_hosts, earliest(_time) as first, latest(_time) as last by process
+| eval tactic="Lateral Movement", technique="Remote Services (T1021.006)"
+| convert ctime(first) ctime(last)
+| where hits>0
+| table first last process hits src_hosts dests tactic technique

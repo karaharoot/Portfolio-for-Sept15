@@ -1,0 +1,15 @@
+/* Brute-force login detection (Windows Security Log or Sysmon Auth events)
+   MITRE ATT&CK: T1110
+   Logic: Multiple failed authentications from the same src_ip to a single account within a short window
+*/
+index=* sourcetype IN ("WinEventLog:Security","sysmon:auth","wineventlog")
+| eval is_fail=if(failure=1 OR like(Status,"%0xC000006%") OR lower(Result)="failure",1,0)
+| where is_fail=1
+| eval user=coalesce(User,Account_Name,user_name,TargetUserName)
+| eval src_ip=coalesce(src_ip,SrcIP,source_ip,src)
+| bin _time span=5m
+| stats count as fail_count, values(host) as hosts, values(src_ip) as srcs by _time, user, src_ip
+| where fail_count >= 8
+| sort - _time
+| eval tactic="Credential Access", technique="Brute Force (T1110)"
+| table _time user src_ip fail_count hosts tactic technique
