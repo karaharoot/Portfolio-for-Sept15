@@ -4,7 +4,7 @@
 This pack contains runnable, demo-friendly scripts that mirror real work:
 - **SIEM detections** (Splunk SPL Rules)
 - **M365 user access automation** (role-based provisioning on mock directory data)
-- **Infrastructure ops** (AD provisioning, compliance report, patch scan via PowerShell)
+- **Infrastructure ops** (AD provisioning and patch scanning via PowerShell)
 
 # Structure
 - `siem/spl/*.spl` — Production-ready Splunk correlation searches
